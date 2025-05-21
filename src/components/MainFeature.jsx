@@ -346,8 +346,8 @@ const MainFeature = () => {
                   </select>
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                    {sortOptions.find(opt => opt.id === sortOrder)?.icon && (
                     )}
+                      <span className="text-surface-500">{sortOptions.find(opt => opt.id === sortOrder)?.icon({ size: 18 })}</span>
                   </div>
                 </div>
               </div>
