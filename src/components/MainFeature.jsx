@@ -345,8 +345,8 @@ const MainFeature = () => {
                     ))}
                   </select>
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                    )}
+                    {sortOptions.find(opt => opt.id === sortOrder)?.icon && (
+                      <i className={sortOptions.find(opt => opt.id === sortOrder)?.icon}></i>
                       <span className="text-surface-500">{sortOptions.find(opt => opt.id === sortOrder)?.icon({ size: 18 })}</span>
                   </div>
                 </div>
@@ -409,9 +409,7 @@ const MainFeature = () => {
                         ${lead.stage === 'Closed Won' 
                           ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' 
                           : lead.stage === 'Closed Lost'
-                            ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
-                            : lead.stage === 'Proposal' || lead.stage === 'Negotiation'
-                              ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400'
+                      
                               : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400'
                         }`}
                       >
@@ -674,7 +672,8 @@ const MainFeature = () => {
                 </div>
               </form>
             </motion.div>
-          </div>
+      </AnimatePresence>
+    </div>
         )}
       </AnimatePresence>
     </div>
