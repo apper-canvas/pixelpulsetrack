@@ -345,8 +345,8 @@ const MainFeature = () => {
                     ))}
                   </select>
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                     {sortOptions.find(opt => opt.id === sortOrder)?.icon && (
-                      <sortOptions.find(opt => opt.id === sortOrder).icon className="h-4 w-4 text-surface-500 dark:text-surface-400" />
                     )}
                   </div>
                 </div>
@@ -406,9 +406,6 @@ const MainFeature = () => {
                       </div>
                       
                       <div className={`px-2.5 py-1 rounded-full text-xs font-medium
-                        ${lead.stage === 'Closed Won' 
-                          ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' 
-                          : lead.stage === 'Closed Lost'
                         ${lead.stage === 'Closed Won' 
                           ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' 
                           : lead.stage === 'Closed Lost'
