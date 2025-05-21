@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Provider } from 'react-redux';
 import { ToastContainer, toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import { getIcon } from './utils/iconUtils';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
+import { store } from './store';
+
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -57,6 +60,7 @@ function App() {
   }, [location.pathname]);
 
   return (
+    <Provider store={store}>
     <div className="min-h-screen flex flex-col">
       {/* Header / Navigation */}
       <header className="bg-white dark:bg-surface-800 shadow-sm border-b border-surface-200 dark:border-surface-700 sticky top-0 z-10">
@@ -195,6 +199,7 @@ function App() {
         theme={isDarkMode ? "dark" : "light"}
       />
     </div>
+    </Provider>
   );
 }
 

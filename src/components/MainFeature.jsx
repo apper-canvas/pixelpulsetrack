@@ -4,16 +4,27 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
 import { getIcon } from '../utils/iconUtils';
+import { selectLeadScoringConfig, selectThresholds } from '../store/leadScoringSlice';
+import { calculateLeadScore, getScoreColorClass } from '../utils/scoringUtils';
+import LeadScoreIndicator from './lead/LeadScoreIndicator';
+import LeadScoreConfig from './lead/LeadScoreConfig';
 
 const MainFeature = () => {
   const dispatch = useDispatch();
   const contacts = useSelector((state) => state.contacts);
   const leads = useSelector((state) => state.leads);
+  const interactions = useSelector((state) => state.interactions);
+  const scoringConfig = useSelector(selectLeadScoringConfig);
   
   // New lead form state
   const [isFormOpen, setIsFormOpen] = useState(false);
+  
+  // Lead scoring config state
+  const [isScoreConfigOpen, setIsScoreConfigOpen] = useState(false);
+  
   const [formData, setFormData] = useState({
     contactId: '',
+    name: '',
     source: '',
     stage: '',
     value: '',
@@ -23,6 +34,7 @@ const MainFeature = () => {
   const [formErrors, setFormErrors] = useState({});
   
   // Filter and search state
+  const [showScoreFilter, setShowScoreFilter] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStage, setFilterStage] = useState('all');
   const [sortOrder, setSortOrder] = useState('newest');
@@ -52,6 +64,7 @@ const MainFeature = () => {
   const PlusIcon = getIcon('plus');
   const XIcon = getIcon('x');
   const SearchIcon = getIcon('search');
+  const SettingsIcon = getIcon('settings');
   const FilterIcon = getIcon('filter');
   const SortAscIcon = getIcon('arrow-up');
   const SortDescIcon = getIcon('arrow-down');
@@ -63,6 +76,9 @@ const MainFeature = () => {
   const TargetIcon = getIcon('target');
   const LayersIcon = getIcon('layers');
   const ClipboardIcon = getIcon('clipboard');
+  const BarChartIcon = getIcon('bar-chart');
+  const ArrowUpIcon = getIcon('arrow-up');
+  const ArrowDownIcon = getIcon('arrow-down');
   
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -172,8 +188,36 @@ const MainFeature = () => {
     }
   };
   
+  // Calculate lead score for display
+  const getLeadScore = (lead) => {
+    return calculateLeadScore(lead, interactions.filter(i => i.leadId === lead.id), scoringConfig);
+  };
+  
+  // Sort options
+  const sortOptions = [
+    { id: 'newest', label: 'Newest First', icon: SortDescIcon },
+    { id: 'oldest', label: 'Oldest First', icon: SortAscIcon },
+    { id: 'score-high', label: 'Highest Score First', icon: ArrowDownIcon },
+    { id: 'score-low', label: 'Lowest Score First', icon: ArrowUpIcon }
+  ];
+  
   // Filter and sort leads
-  const filteredLeads = [...leads]
+  const filteredAndSortedLeads = [...leads]
+    .map(lead => ({
+      ...lead,
+      calculatedScore: getLeadScore(lead)
+    }))
+    .filter(lead => {
+      // Filter by score if needed
+      if (showScoreFilter) {
+        if (lead.calculatedScore < scoringConfig.thresholds.low) {
+          return false;
+        }
+      }
+      
+      return true;
+    })
+    .filter(lead => {
     .filter(lead => {
       // Filter by stage
       if (filterStage !== 'all' && lead.stage !== filterStage) {
@@ -197,11 +241,19 @@ const MainFeature = () => {
       return true;
     })
     .sort((a, b) => {
-      // Sort by created date
+      // Sort based on selected option
       if (sortOrder === 'newest') {
         return new Date(b.createdAt) - new Date(a.createdAt);
-      } else {
+      } else if (sortOrder === 'oldest') {
         return new Date(a.createdAt) - new Date(b.createdAt);
+      } else if (sortOrder === 'score-high') {
+        // Sort by score high to low
+        return b.calculatedScore - a.calculatedScore;
+      } else if (sortOrder === 'score-low') {
+        // Sort by score low to high
+        return a.calculatedScore - b.calculatedScore;
+      } else {
+        return new Date(b.createdAt) - new Date(a.createdAt);
       }
     });
   
@@ -228,61 +280,97 @@ const MainFeature = () => {
             Track and manage your sales pipeline
           </p>
         </div>
-        
-        <button
-          onClick={() => setIsFormOpen(true)}
-          className="mt-4 sm:mt-0 btn btn-primary inline-flex items-center"
-        >
-          <PlusIcon className="h-4 w-4 mr-2" />
-          <span>Add New Lead</span>
-        </button>
+
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={() => setIsScoreConfigOpen(true)}
+            className="mt-4 sm:mt-0 btn btn-outline inline-flex items-center"
+          >
+            <SettingsIcon className="h-4 w-4 mr-2" />
+            <span>Score Settings</span>
+          </button>
+          
+          <button
+            onClick={() => setIsFormOpen(true)}
+            className="mt-4 sm:mt-0 btn btn-primary inline-flex items-center"
+          >
+            <PlusIcon className="h-4 w-4 mr-2" />
+            <span>Add New Lead</span>
+          </button>
+        </div>
       </div>
       
       {/* Filter and Search */}
       <div className="bg-white dark:bg-surface-800 rounded-xl shadow-sm border border-surface-200 dark:border-surface-700 p-4 mb-6">
-        <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
-          <div className="flex-1 relative">
-            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-surface-400" />
-            <input
-              type="text"
-              placeholder="Search leads..."
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-surface-300 dark:border-surface-600 bg-white dark:bg-surface-800 focus:ring-2 focus:ring-primary"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          
-          <div className="flex space-x-4">
-            <div className="w-48">
-              <div className="flex items-center space-x-2">
-                <FilterIcon className="h-5 w-5 text-surface-500 dark:text-surface-400" />
-                <select
-                  className="w-full bg-white dark:bg-surface-800 border border-surface-300 dark:border-surface-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary"
-                  value={filterStage}
-                  onChange={(e) => setFilterStage(e.target.value)}
-                >
-                  <option value="all">All Stages</option>
-                  {stageOptions.map((stage) => (
-                    <option key={stage} value={stage}>{stage}</option>
-                  ))}
-                </select>
-              </div>
+        <div className="flex flex-col space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
+            <div className="flex-1 relative">
+              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-surface-400" />
+              <input
+                type="text"
+                placeholder="Search leads..."
+                className="w-full pl-10 pr-4 py-2 rounded-lg border border-surface-300 dark:border-surface-600 bg-white dark:bg-surface-800 focus:ring-2 focus:ring-primary"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
             
-            <div>
-              <button
-                onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')}
-                className="flex items-center space-x-2 p-2 rounded-lg border border-surface-300 dark:border-surface-600 hover:bg-surface-100 dark:hover:bg-surface-700"
+            <div className="flex space-x-4">
+              <div className="w-48">
+                <div className="flex items-center space-x-2">
+                  <FilterIcon className="h-5 w-5 text-surface-500 dark:text-surface-400" />
+                  <select
+                    className="w-full bg-white dark:bg-surface-800 border border-surface-300 dark:border-surface-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary"
+                    value={filterStage}
+                    onChange={(e) => setFilterStage(e.target.value)}
+                  >
+                    <option value="all">All Stages</option>
+                    {stageOptions.map((stage) => (
+                      <option key={stage} value={stage}>{stage}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              <div>
+                <div className="relative">
+                  <select
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value)}
+                    className="w-full bg-white dark:bg-surface-800 border border-surface-300 dark:border-surface-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary pr-9"
+                  >
+                    {sortOptions.map(option => (
+                      <option key={option.id} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                    {sortOptions.find(opt => opt.id === sortOrder)?.icon && (
+                      <sortOptions.find(opt => opt.id === sortOrder).icon className="h-4 w-4 text-surface-500 dark:text-surface-400" />
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex justify-between items-center">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="score-filter"
+                checked={showScoreFilter}
+                onChange={() => setShowScoreFilter(!showScoreFilter)}
+                className="mr-2 h-4 w-4 rounded border-surface-300 dark:border-surface-600 text-primary focus:ring-primary"
+              />
+              <label
+                htmlFor="score-filter"
+                className="text-sm text-surface-700 dark:text-surface-300 flex items-center"
               >
-                {sortOrder === 'newest' ? (
-                  <SortDescIcon className="h-5 w-5 text-surface-500 dark:text-surface-400" />
-                ) : (
-                  <SortAscIcon className="h-5 w-5 text-surface-500 dark:text-surface-400" />
-                )}
-                <span className="text-sm text-surface-600 dark:text-surface-400">
-                  {sortOrder === 'newest' ? 'Newest' : 'Oldest'}
-                </span>
-              </button>
+                <BarChartIcon className="h-4 w-4 mr-1.5" />
+                Show only leads with scores above low threshold
+              </label>
             </div>
           </div>
         </div>
@@ -290,10 +378,10 @@ const MainFeature = () => {
       
       {/* Leads List */}
       <div>
-        {filteredLeads.length > 0 ? (
+        {filteredAndSortedLeads.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
-              {filteredLeads.map((lead, index) => (
+              {filteredAndSortedLeads.map((lead, index) => (
                 <motion.div
                   key={lead.id}
                   variants={cardVariants}
@@ -322,6 +410,9 @@ const MainFeature = () => {
                         ${lead.stage === 'Closed Won' 
                           ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' 
                           : lead.stage === 'Closed Lost'
+                        ${lead.stage === 'Closed Won' 
+                          ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' 
+                          : lead.stage === 'Closed Lost'
                             ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
                             : lead.stage === 'Proposal' || lead.stage === 'Negotiation'
                               ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400'
@@ -330,6 +421,12 @@ const MainFeature = () => {
                       >
                         {lead.stage}
                       </div>
+                    </div>
+                    
+                    {/* Score Indicator */}
+                    <div className="absolute top-4 right-4">
+                      <LeadScoreIndicator 
+                        score={lead.calculatedScore} />
                     </div>
                     
                     <div className="mt-6 space-y-4">
@@ -398,6 +495,9 @@ const MainFeature = () => {
           </div>
         )}
       </div>
+      
+      {/* Lead Score Configuration Modal */}
+      <LeadScoreConfig isOpen={isScoreConfigOpen} onClose={() => setIsScoreConfigOpen(false)} />
       
       {/* New Lead Form Modal */}
       <AnimatePresence>

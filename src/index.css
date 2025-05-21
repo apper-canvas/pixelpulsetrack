@@ -86,6 +86,37 @@
   .pill {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
+  
+  /* React Slider custom styles */
+  .horizontal-slider {
+    @apply w-full h-6 bg-surface-200 dark:bg-surface-700 rounded-full;
+  }
+  
+  .example-thumb {
+    @apply h-6 w-6 rounded-full bg-primary shadow focus:outline-none;
+    cursor: grab;
+  }
+  
+  .example-thumb:active {
+    cursor: grabbing;
+  }
+  
+  .example-track {
+    @apply h-2 rounded-full;
+  }
+  
+  .example-track-0 {
+    @apply bg-primary;
+  }
+  
+  .example-track-1 {
+    @apply bg-surface-300 dark:bg-surface-600;
+  }
+  
+  .lead-score-indicator {
+    @apply rounded-full flex items-center justify-center font-semibold relative transition-colors;
+    cursor: help;
+  }
 }
 
 @layer utilities {
