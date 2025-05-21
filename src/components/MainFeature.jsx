@@ -345,10 +345,10 @@ const MainFeature = () => {
                     ))}
                   </select>
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                    {sortOptions.find(opt => opt.id === sortOrder)?.icon && (
+                    className="appearance-none font-medium text-surface-600 dark:text-surface-300 pr-8 pl-2 py-1 rounded bg-transparent border border-surface-300 dark:border-surface-600 hover:border-surface-400 focus:outline-none focus:ring-1 focus:ring-primary dark:hover:border-surface-500 transition"
                       <i className={sortOptions.find(opt => opt.id === sortOrder)?.icon}></i>
-                      <span className="text-surface-500">{sortOptions.find(opt => opt.id === sortOrder)?.icon({ size: 18 })}</span>
-                  </div>
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                    {sortOptions.find(opt => opt.id === sortOrder)?.icon && (
                 </div>
               </div>
             </div>
@@ -389,7 +389,7 @@ const MainFeature = () => {
                   transition={{ delay: index * 0.05 }}
                   className="card card-hover"
                 >
-                  <div className="p-6">
+                    <div className="flex items-center space-x-2 ml-4">
                     <div className="flex justify-between items-start">
                       <div className="flex items-center space-x-2">
                         <div className="bg-surface-100 dark:bg-surface-700 rounded-full p-2">
@@ -406,13 +406,14 @@ const MainFeature = () => {
                       </div>
                       
                       <div className={`px-2.5 py-1 rounded-full text-xs font-medium
-                        ${lead.stage === 'Closed Won' 
+            <div key={stage.id} className="stage bg-surface-100 dark:bg-surface-800 rounded-lg p-4 flex flex-col">
                           ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' 
                           : lead.stage === 'Closed Lost'
                       
                               : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400'
-                        }`}
-                      >
+                      <i className={stage.icon}></i>
+                    </span>
+                  )}
                         {lead.stage}
                       </div>
                     </div>
@@ -476,7 +477,7 @@ const MainFeature = () => {
                 : 'Start by adding a new lead to your pipeline'}
             </p>
             {(searchTerm || filterStage !== 'all') && (
-              <button
+                          </div>
                 onClick={() => {
                   setSearchTerm('');
                   setFilterStage('all');
@@ -511,7 +512,7 @@ const MainFeature = () => {
                 <button
                   onClick={() => setIsFormOpen(false)}
                   className="p-1.5 rounded-full hover:bg-surface-100 dark:hover:bg-surface-700 text-surface-500 dark:text-surface-400"
-                >
+                              </div>
                   <XIcon className="h-5 w-5" />
                 </button>
               </div>
@@ -566,7 +567,7 @@ const MainFeature = () => {
                       <p className="mt-1 text-sm text-red-500">{formErrors.source}</p>
                     )}
                   </div>
-                  
+              </div>
                   {/* Stage */}
                   <div className="input-group">
                     <label htmlFor="stage" className="input-label">
@@ -575,7 +576,7 @@ const MainFeature = () => {
                     <select
                       id="stage"
                       name="stage"
-                      className={formErrors.stage ? 'border-red-500 focus:ring-red-500' : ''}
+              Showing <span className="font-semibold">{filteredLeads.length}</span> leads
                       value={formData.stage}
                       onChange={handleInputChange}
                     >
@@ -616,7 +617,7 @@ const MainFeature = () => {
                   {/* Probability */}
                   <div className="input-group">
                     <label htmlFor="probability" className="input-label">
-                      Probability (%) <span className="text-red-500">*</span>
+          <div className="space-y-4 p-4">
                     </label>
                     <div className="relative">
                       <PercentIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-surface-400" />
@@ -675,6 +676,7 @@ const MainFeature = () => {
       </AnimatePresence>
     </div>
         )}
+      </AnimatePresence>
       </AnimatePresence>
     </div>
   );
