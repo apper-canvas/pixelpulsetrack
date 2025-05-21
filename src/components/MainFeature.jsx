@@ -218,7 +218,6 @@ const MainFeature = () => {
       return true;
     })
     .filter(lead => {
-    .filter(lead => {
       // Filter by stage
       if (filterStage !== 'all' && lead.stage !== filterStage) {
         return false;
